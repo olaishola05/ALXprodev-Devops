@@ -25,6 +25,8 @@ END {
     formatted_weight = weight_hg / 10
     formatted_height = height_dm / 10
 
+    # "$name is of type $type, weighs ${formatted_weight}kg, and is ${formatted_height}m tall."
+
     printf "%s is of type %s, weighs %skg, and is %sm tall.\n", \
     name, type, formatted_weight, formatted_height
 }'
