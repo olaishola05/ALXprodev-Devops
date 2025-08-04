@@ -1,19 +1,30 @@
 #!/bin/bash
 JSON_FILE="data.json"
 
+if [ ! -f "$JSON_FILE" ]; then
+    echo "Error: The file '$JSON_FILE' was not found." >&2
+    exit 1
+fi
+
 jq -r '.name, .height, .weight, .types[0].type.name' "$JSON_FILE" | \
-sed '1s/^./\u&/; 4s/^./\u&/' | \
+sed 's/$/ /' | \
 awk '
 {
-  if (NR==1) name = $0
-  if (NR==2) height = $0
-  if (NR==3) weight = $0
-  if (NR==4) type = $0
+    # Assign each line of output from jq and sed to a variable based on its line number (NR)
+    # The name and type are already capitalized by the sed command.
+    if (NR==1) name = $0
+    if (NR==2) height_dm = $0
+    if (NR==3) weight_hg = $0
+    if (NR==4) type = $0
 }
 END {
-  formatted_weight = weight_hg / 10
-  formatted_height = height_dm / 10
 
-  printf "%s is of type %s, weighs %skg, and is %sm tall.\n", \
-      name, type, formatted_weight, formatted_height
+    name = toupper(substr(name, 1, 1)) substr(name, 2)
+    type = toupper(substr(type, 1, 1)) substr(type, 2)
+
+    formatted_weight = weight_hg / 10
+    formatted_height = height_dm / 10
+
+    printf "%s is of type %s, weighs %skg, and is %sm tall.\n", \
+    name, type, formatted_weight, formatted_height
 }'
