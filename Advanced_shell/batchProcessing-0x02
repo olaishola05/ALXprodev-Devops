@@ -1,0 +1,18 @@
+#!/bin/bash
+API_URL="https://pokeapi.co/api/v2/pokemon"
+pokemons=("bulbasaur" "ivysaur" "venusaur" "charmander" "charmeleon")
+
+for pokemon in "${pokemons[@]}"; do
+    OUTPUT_FILE="${pokemon}.json"
+    ERROR_LOG="${pokemon}_errors.txt"
+
+    status_code=$(curl -s -o "${OUTPUT_FILE}" -w "%{http_code}" "${API_URL}/${pokemon}")
+
+    if [ "$status_code" -ne 200 ]; then
+        echo "Error: Received HTTP status code $status_code for ${pokemon}" > "${ERROR_LOG}"
+        exit 1
+    else
+        echo "Data for ${pokemon} fetched successfully and saved to ${OUTPUT_FILE}"
+    fi
+    sleep 2
+done
