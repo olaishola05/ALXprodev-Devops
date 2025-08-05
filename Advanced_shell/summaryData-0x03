@@ -18,6 +18,7 @@ if ! $found_files; then
 fi
 
 jq -r '.name, .height, .weight' "${JSON_FILES[@]}" | \
+sed 's/$/ /' | \
 awk '
 BEGIN {
     printf "Name, Height (m), Weight (kg)\n"
@@ -52,4 +53,5 @@ END {
     printf "Average Weight: %.2f kg\n", avg_weight
 }' > "$OUTPUT_FILE"
 
+# >> "$OUTPUT_FILE"
 echo "CSV report generated at: $OUTPUT_FILE"
