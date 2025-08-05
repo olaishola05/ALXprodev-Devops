@@ -1,18 +1,32 @@
 #!/bin/bash
 API_URL="https://pokeapi.co/api/v2/pokemon"
-pokemons=("bulbasaur" "ivysaur" "venusaur" "charmander" "charmeleon")
+pokemons=("bulbasaur" "ivysaur" "venusaur" "charmander" "charmeleon" "invalidpokemon")
 
 for pokemon in "${pokemons[@]}"; do
     OUTPUT_FILE="${pokemon}.json"
     ERROR_LOG="${pokemon}_errors.txt"
 
-    status_code=$(curl -s -o "${OUTPUT_FILE}" -w "%{http_code}" "${API_URL}/${pokemon}")
+    success=false
 
-    if [ "$status_code" -ne 200 ]; then
-        echo "Error: Received HTTP status code $status_code for ${pokemon}" > "${ERROR_LOG}"
-        exit 1
-    else
-        echo "Data for ${pokemon} fetched successfully and saved to ${OUTPUT_FILE}"
+    for attempt in {1..3}; do
+        echo "Attempt #$attempt to fetch data for ${pokemon}..."
+
+        status_code=$(curl -s -o "${OUTPUT_FILE}" -w "%{http_code}" "${API_URL}/${pokemon}")
+
+        if [ "$status_code" -eq 200 ]; then
+            echo "Data for ${pokemon} fetched successfully on attempt #$attempt and saved to ${OUTPUT_FILE}"
+            success=true
+            break
+        else
+            echo "Error on attempt #$attempt: Received HTTP status code $status_code for ${pokemon}"
+            sleep 2
+        fi
+    done
+
+    if ! $success; then
+        echo "All 3 attempts failed for ${pokemon}. Skipping to the next pokemon." >> "${ERROR_LOG}"
+        continue
     fi
-    sleep 2
 done
+
+echo "Script finished processing all pokemon."
