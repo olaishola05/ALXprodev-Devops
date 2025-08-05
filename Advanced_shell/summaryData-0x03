@@ -1,0 +1,55 @@
+#!/bin/bash
+JSON_FILES=("bulbasaur.json" "charmander.json" "charmeleon.json" "ivysaur.json" "venusaur.json")
+
+OUTPUT_FILE="pokemon_report.csv"
+found_files=false
+
+for file in "${JSON_FILES[@]}"; do
+    if [[ -f "$file" ]]; then
+        found_files=true
+        break
+    fi
+done
+
+
+if ! $found_files; then
+    echo "No Pokémon JSON files found. Exiting." >&2
+    exit 1
+fi
+
+jq -r '.name, .height, .weight' "${JSON_FILES[@]}" | \
+awk '
+BEGIN {
+    printf "Name, Height (m), Weight (kg)\n"
+
+    total_weight = 0
+    total_height = 0
+    count = 0
+}
+
+{
+    if ( (NR-1) % 3 == 0) {
+        name = toupper(substr($0, 1, 1)) substr($0, 2)
+    } else if ( (NR-1) % 3 == 1 ) {
+        formatted_height = $0 / 10
+    } else if ( (NR-1) % 3 == 2 ) {
+        formatted_weight = $0 / 10
+
+        printf "%s, %.1f, %.1f\n", name, formatted_height, formatted_weight
+        total_weight += formatted_weight
+        total_height += formatted_height
+        count++
+    }
+}
+
+END {
+    printf "\n"
+
+    avg_weight = total_weight / count
+    avg_height = total_height / count
+
+    printf "Average Height: %.2f m\n", avg_height
+    printf "Average Weight: %.2f kg\n", avg_weight
+}' > "$OUTPUT_FILE"
+
+echo "CSV report generated at: $OUTPUT_FILE"
