@@ -1,0 +1,25 @@
+#!/bin/bash
+
+API_URL="https://pokeapi.co/api/v2/pokemon"
+
+pokemons=("bulbasaur" "ivysaur" "venusaur" "charmander" "charmeleon")
+
+
+echo "Starting parallel data fetching for ${#pokemons[@]} Pokémon..."
+echo "Output files will be saved in the '$OUTPUT_DIR' directory."
+
+for pokemon in "${pokemons[@]}"; do
+
+    FULL_URL="${API_URL}/${pokemon}"
+    OUTPUT_FILE="${pokemon}.json"
+
+    curl -s -o "$OUTPUT_FILE" "$FULL_URL" &
+
+    echo "Started background fetch for: $pokemon"
+done
+
+echo "All background processes have been launched. Waiting for them to complete..."
+wait
+
+echo "All Pokémon data has been fetched and saved to the '$OUTPUT_DIR' directory."
+echo "Script finished successfully."
