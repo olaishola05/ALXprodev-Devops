@@ -18,6 +18,11 @@ for pokemon in "${pokemons[@]}"; do
     echo "Started background fetch for: $pokemon"
 done
 
+echo "Current background jobs:"
+jobs
+
+# kill $(jobs -p)
+
 echo "All background processes have been launched. Waiting for them to complete..."
 wait
 
